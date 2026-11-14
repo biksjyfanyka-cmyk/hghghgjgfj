@@ -1,0 +1,43 @@
+import { chromium } from 'playwright';
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1440, height: 980 } });
+const errors = [];
+page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message));
+page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+await page.goto('http://localhost:4173/', { waitUntil: 'domcontentloaded', timeout: 20000 });
+await page.waitForTimeout(1500);
+await page.screenshot({ path: 'public/_qa/hero-fixed.png' });
+console.log('shot hero');
+await page.getByRole('button', { name: /Начать смену/i }).first().click();
+await page.waitForTimeout(1500);
+await page.screenshot({ path: 'public/_qa/game-new.png' });
+console.log('shot game');
+await page.evaluate(() => {
+  const g = window.__schoolGame;
+  g.px = 15.5; g.py = 8.55; g.angle = 0;
+  g.teacherActive = true; g.teacherGrace = 0; g.teacherX = 19.5; g.teacherY = 8.55;
+});
+await page.waitForTimeout(900);
+await page.screenshot({ path: 'public/_qa/teacher-corridor.png' });
+console.log('shot teacher');
+await page.evaluate(() => {
+  const g = window.__schoolGame;
+  g.px = 14.5; g.py = 8.55; g.angle = -Math.PI / 2;
+  g.teacherActive = false;
+});
+await page.waitForTimeout(500);
+await page.screenshot({ path: 'public/_qa/classroom-view.png' });
+await page.keyboard.press('Escape');
+await page.waitForTimeout(500);
+await page.screenshot({ path: 'public/_qa/pause.png' });
+await page.keyboard.press('Escape');
+await page.waitForTimeout(300);
+await page.evaluate(() => {
+  const g = window.__schoolGame;
+  g.teacherActive = true; g.teacherStun = 0; g.teacherGrace = 0;
+  g.teacherX = g.px + 0.2; g.teacherY = g.py;
+});
+await page.waitForTimeout(1000);
+await page.screenshot({ path: 'public/_qa/lose.png' });
+console.log('errors', errors);
+await browser.close();

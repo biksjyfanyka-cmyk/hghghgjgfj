@@ -1,0 +1,45 @@
+import { chromium, devices } from 'playwright';
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+const errors = [];
+page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message));
+await page.goto('http://localhost:4173/', { waitUntil: 'domcontentloaded', timeout: 20000 });
+await page.waitForTimeout(1200);
+await page.screenshot({ path: 'public/_qa/mobile-hero2.png' });
+await page.getByRole('button', { name: /Играть/i }).first().click();
+await page.waitForTimeout(1200);
+await page.screenshot({ path: 'public/_qa/mobile-game2.png' });
+await page.evaluate(() => {
+  const g = window.__schoolGame;
+  g.px = 6.8; g.py = 5.0; g.angle = 0.4;
+});
+await page.waitForTimeout(400);
+await page.locator('button[aria-label^="Действие"]').click();
+await page.waitForTimeout(500);
+await page.screenshot({ path: 'public/_qa/mobile-quiz.png' });
+await page.locator('button[aria-label="Отложить тетрадь"]').click();
+await page.waitForTimeout(300);
+await page.locator('button[aria-label="Пауза"]').last().click();
+await page.waitForTimeout(400);
+await page.screenshot({ path: 'public/_qa/mobile-pause.png' });
+console.log('errors', errors);
+const page2 = await browser.newPage({ viewport: { width: 1440, height: 980 } });
+await page2.goto('http://localhost:4173/', { waitUntil: 'domcontentloaded' });
+await page2.waitForTimeout(800);
+await page2.getByRole('button', { name: /Начать смену/i }).first().click();
+await page2.waitForTimeout(1000);
+await page2.evaluate(() => {
+  const g = window.__schoolGame;
+  g.px = 15.5; g.py = 8.55; g.angle = 0;
+  g.teacherActive = true; g.teacherGrace = 0; g.teacherX = 19.2; g.teacherY = 8.55;
+});
+await page2.waitForTimeout(700);
+await page2.screenshot({ path: 'public/_qa/teacher-new.png' });
+await page2.evaluate(() => {
+  const g = window.__schoolGame;
+  g.teacherActive = false;
+  g.px = 15.5; g.py = 8.55; g.angle = Math.PI;
+});
+await page2.waitForTimeout(400);
+await page2.screenshot({ path: 'public/_qa/lockers-new.png' });
+await browser.close();
