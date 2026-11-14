@@ -11,8 +11,8 @@ jobs:
       - run: npm install
       - run: npm install --save-dev electron electron-builder
       - run: npm run build
-      - run: npx electron-builder --win portable --config.appId=com.baldi.game --config.productName=BaldisClone --config.directories.output=release --config.files="dist/**/*" --config.files="main.js" --config.extraMetadata.main=main.js
+      - run: npx electron-builder --win dir --config.appId=com.baldi.game --config.productName=BaldisClone --config.directories.output=release --config.files="dist/**/*" --config.files="main.js" --config.extraMetadata.main=main.js
       - uses: actions/upload-artifact@v4
         with:
-          name: Baldi-Game-EXE
-          path: release/*.exe
+          name: Baldi-Game-Ready
+          path: release/win-unpacked/**/*
